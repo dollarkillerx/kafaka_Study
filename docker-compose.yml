@@ -1,22 +1,100 @@
 version: '3'
 services:
-  zookeeper:
-    image: wurstmeister/zookeeper
-    ports:
-      - "2181:2181"
+#  afka-manager:
+#    container_name: docker-kafka_kafka-manager
+#    image: kafkamanager/kafka-manager:latest
+#    ports:
+#      - 9009:9000
+#    environment:
+#      ZK_HOSTS: 192.168.88.11:21811
+#      KAFKA_MANAGER_AUTH_ENABLED: "true"
+#      KAFKA_MANAGER_USERNAME: admin
+#      KAFKA_MANAGER_PASSWORD: admin
 
-  kafka:
-    image: wurstmeister/kafka
+
+  zoo1:
+    image: wurstmeister/zookeeper
+    restart: always
+    container_name: zoo1
     ports:
-      - "9092:9092"
-    depends_on:
-      - zookeeper
+      - "21811:2181"
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: 192.168.2.200
-      KAFKA_CREATE_TOPICS: "test-top:1:1"
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888:observer
+
+  zoo2:
+    image: wurstmeister/zookeeper
+    restart: always
+    container_name: zoo2
+    ports:
+      - "21812:2181"
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888:observer
+
+  zoo3:
+    image: wurstmeister/zookeeper
+    restart: always
+    container_name: zoo3
+    ports:
+      - "21813:2181"
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888 server.2=zoo2:2888:3888 server.3=zoo3:2888:3888:observer
+
+  broker1:
+    image: wurstmeister/kafka
+    restart: always
+    container_name: broker1
+    ports:
+      - "9192:9092"
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2181,zoo3:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.88.11:9192
+      auto.leader.rebalance.enable: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
+  broker2:
+    image: wurstmeister/kafka
+    restart: always
+    container_name: broker2
+    ports:
+      - "9292:9092"
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2181,zoo3:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.88.11:9292
+      auto.leader.rebalance.enable: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
-# docker run --name zookeeper -p2181:2181 -p2888:2888 -p3888:3888 -p8080:8080 -d zookeeper:latest
+  broker3:
+    image: wurstmeister/kafka
+    restart: always
+    container_name: broker3
+    ports:
+      - "9392:9092"
+    depends_on:
+      - zoo1
+      - zoo2
+      - zoo3
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zoo1:2181,zoo2:2181,zoo3:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.88.11:9392
+      auto.leader.rebalance.enable: "true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

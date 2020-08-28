@@ -25,7 +25,7 @@ func producer() {
 	partition := 0
 
 	toCtx, _ := context.WithTimeout(context.Background(), time.Second*3)
-	conn, err := kafka.DialLeader(toCtx, "tcp", "127.0.0.1:9092", topic, partition)
+	conn, err := kafka.DialLeader(toCtx, "tcp", "192.168.88.11:9292", topic, partition)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -50,7 +50,7 @@ func consumer() {
 	topic := "test-top"
 	partition := 0
 
-	conn, err := kafka.DialLeader(context.Background(), "tcp", "127.0.0.1:9092", topic, partition)
+	conn, err := kafka.DialLeader(context.Background(), "tcp", "192.168.88.11:21811", topic, partition)
 	if err != nil {
 		log.Fatalln(err)
 	}
