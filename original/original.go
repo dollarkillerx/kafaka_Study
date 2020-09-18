@@ -16,7 +16,7 @@ func main() {
 }
 
 func test1() {
-	producer()
+	//producer()
 	consumer()
 }
 
@@ -25,7 +25,7 @@ func producer() {
 	partition := 0
 
 	toCtx, _ := context.WithTimeout(context.Background(), time.Second*3)
-	conn, err := kafka.DialLeader(toCtx, "tcp", "192.168.88.11:9292", topic, partition)
+	conn, err := kafka.DialLeader(toCtx, "tcp", "192.168.88.11:9091", topic, partition)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -47,27 +47,23 @@ func producer() {
 
 func consumer() {
 	log.Println("Consumer Init")
-	topic := "test-top"
-	partition := 0
 
-	conn, err := kafka.DialLeader(context.Background(), "tcp", "192.168.88.11:21811", topic, partition)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer conn.Close()
+	reader := kafka.NewReader(kafka.ReaderConfig{
+		Brokers:  []string{"192.168.88.11:9091"},
+		GroupID:  "sc02",
+		Topic:    "assets",
+		MinBytes: 10e3,
+		MaxBytes: 1e6,
+	})
 
-	//conn.SetReadDeadline(time.Now().Add(10*time.Second))  设置读取timeout
-
-	// 设置读取批次 (最小粒度,最大粒度)
-	batch := conn.ReadBatch(10e3, 1e6) // fetch 10KB min, 1MB max
-	defer batch.Close()
-	b := make([]byte,10e3)
 	for {
-		read, err := batch.Read(b)
+		message, err := reader.ReadMessage(context.TODO())
 		if err != nil {
 			log.Println(err)
-			break
 		}
-		fmt.Println(string(read))
+
+		log.Println("key: ", string(message.Key))
+		fmt.Println("val: ", string(message.Value))
+		break
 	}
 }

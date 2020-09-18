@@ -58,6 +58,16 @@ services:
 
 ![](./README/sc4.png)
 
+### 设置kafka外网 IP
+``` 
+listeners=PLAINTEXT://0.0.0.0:9092
+
+# Hostname and port the broker will advertise to producers and consumers. If not set,
+# it uses the value for "listeners" if configured.  Otherwise, it will use the value
+# returned from java.net.InetAddress.getCanonicalHostName().
+advertised.listeners=PLAINTEXT://192.168.88.11:9192
+```
+
 #### Consumers kafka确保
 -  发送到partitions中的消息将会按照它接收的顺序追加到日志中。也就是说，如果记录M1由与记录M2相同的生成者发送，并且首先发送M1，则M1将具有比M2更低的偏移并且在日志中更早出现。
 -  消费者实例按照它们存储在日志中的顺序查看记录。对于消费者而言,它们消费消息的顺序和日志中消息顺序一致。
@@ -69,3 +79,4 @@ services:
     - goka https://github.com/lovoo/goka
     - confluent-kafka-go https://github.com/confluentinc/confluent-kafka-go  (这个是基于CGO的包装 首先放弃他把)
     
+ 

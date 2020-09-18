@@ -13,8 +13,8 @@ import (
 )
 
 var (
-	//brokers             = []string{"192.168.88.11:21811,192.168.88.11:21812,192.168.88.11:21813"}
-	brokers             = []string{"192.168.88.11:9292"}
+	brokers             = []string{"192.168.88.11:9091", "192.168.88.11:9092", "192.168.88.11:9093"}
+	//brokers             = []string{"192.168.88.11:9292"}
 	topic   goka.Stream = "example-stream"
 	group   goka.Group  = "example-group"
 )
